@@ -3,25 +3,33 @@ import { GameContext } from "./GameContext";
 import { useGameEngine } from "../hooks/useGameEngine";
 // Create provider
 export const GameProvider = ({ children }) => {
-  // const [score, setScore] = useState(0);
-  // const increaseScore = () => setScore((prev) => prev + 1);
-  // const [load, setLoad] = useState(false);
-
-  // const [cards, setCards] = useState([]);
-  // const [cardsClickable, setCardsClickable] = useState(true);
-  // const [firstCardID, setFirstCardID] = useState(null);
   const {
     cards,
     setCards,
     loading,
     error,
     cardsClickable,
+    moves,
     setCardsClickable,
     firstCardID,
     setFirstCardID,
+    startTimestamp,
+    setStartTimestamp,
+    elapsedTime,
+    setElapsedTime,
     handleCardClick,
     isGameOver,
     handleGameReset,
+    handleGameStart,
+    handleAPIReset,
+    gameState,
+    setGameState,
+    handleGameState,
+    handlePlayBgMusic,
+    handleMute,
+    audioMute,
+    setAudioMute,
+    audioRef,
   } = useGameEngine();
 
   return (
@@ -32,22 +40,27 @@ export const GameProvider = ({ children }) => {
         loading,
         error,
         cardsClickable,
+        moves,
+        startTimestamp,
+        setStartTimestamp,
         setCardsClickable,
         firstCardID,
         setFirstCardID,
+        elapsedTime,
+        setElapsedTime,
         handleCardClick,
         isGameOver,
         handleGameReset,
-        // score,
-        // increaseScore,
-        // load,
-        // setLoad,
-        // cards,
-        // setCards,
-        // firstCardID,
-        // setFirstCardID,
-        // cardsClickable,
-        // setCardsClickable,
+        handleGameStart,
+        handleAPIReset,
+        gameState,
+        setGameState,
+        handleGameState,
+        handlePlayBgMusic,
+        handleMute,
+        audioMute,
+        setAudioMute,
+        audioRef,
       }}
     >
       {children}

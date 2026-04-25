@@ -8,6 +8,11 @@ export default {
         bounce2: "bounce 1s 0.65s infinite",
         bounce3: "bounce 1s 0.8s infinite",
       },
+      fontFamily: {
+        cursive: ['"Dancing Script"', "cursive"],
+        emphasis: ["Poppins", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
     },
   },
   plugins: [],

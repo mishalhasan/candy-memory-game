@@ -81,3 +81,28 @@ export const toggleCardStatus = (prevCards, targetID, prop, propVal) => {
 
 export const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+export const formatTime = (ms) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  let mins = Math.floor(totalSeconds / 60);
+  let secs = totalSeconds % 60;
+
+  //Add padding
+  if (mins < 10) mins = "0" + mins;
+  if (secs < 10) secs = "0" + secs;
+
+  return `${mins}:${secs}`;
+};
+
+export const saveBestTime = (time) => {
+    const stored = localStorage.getItem("bestTime");
+    const best = stored === null ? Infinity : Number(stored);
+
+  if (time < best) {
+    localStorage.setItem("bestTime", String(time));
+  }
+};
+
+export const getBestTime = () => {
+  const stored = localStorage.getItem("bestTime");
+  return stored === null ? 0 : Number(stored);
+};

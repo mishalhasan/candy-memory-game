@@ -1,7 +1,8 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { GameContext } from "../context/GameContext.jsx";
-
 import { fetchCandyLandPhotos } from "../api/cards.js";
+import bgAudio from "../assets/audio/candy-bg.mp3";
+
 import {
   prepareCards,
   isValidCard,
@@ -17,56 +18,84 @@ export const useGameEngine = () => {
   const [cards, setCards] = useState([]);
   const [cardsClickable, setCardsClickable] = useState(true);
   const [firstCardID, setFirstCardID] = useState(null);
-
-  // const {
-  //     cards,
-  //     setCards,
-  //     firstCardID,
-  //     setFirstCardID,
-  //     cardsClickable,
-  //     setCardsClickable,
-  //   } = useContext(GameContext);
+  const [moves, setMoves] = useState(0);
+  const [startTimestamp, setStartTimestamp] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [gameState, setGameState] = useState("idle"); //'idle', 'playing', 'paused', 'ended'
+  const [audioMute, setAudioMute] = useState(false);
+  const intervalRef = useRef(null);
+  const audioRef = useRef(new Audio(bgAudio));
 
   /*** GAME SETUP/END ***/
 
-  /**
-   * Loading initial images from Unsplash API
+  /*
+   * Loading game data on initial page load
    */
   useEffect(() => {
-    async function loadData() {
-      try {
-        const result = await fetchCandyLandPhotos(); // already processed
-        const imgCards = prepareCards(result);
-        if (imgCards) setCards(imgCards);
-        console.log("imgCards", imgCards);
-        console.log("cards", cards);
-      } catch (error) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
   }, []);
+
+  /*
+   * Get images from Unsplash API
+   */
+  async function loadData() {
+    try {
+      //ensure API state initalized to default value
+      setLoading(true);
+      setError(false);
+
+      const result = await fetchCandyLandPhotos(); // already processed
+      const imgCards = prepareCards(result);
+      if (imgCards) setCards(imgCards);
+      console.log("imgCards", imgCards);
+      console.log("cards", cards);
+    } catch (error) {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   /**
    * Boolean value for whether all matches found; signialing end of game.
    */
   const isGameOver = cards.length > 0 && cards.every((card) => card.isMatched);
-  console.log("in game function", isGameOver);
+
+  /*** TIMER FUNCTIONS ***/
+
+  /**
+   * Timer controlled by startTimestamp (updated only on game start and end) &
+   * gameState to allow for pause of timer in middle of game. Gamestate triggers to
+   * 'ended' in useGameEnd hook.
+   */
+  useEffect(() => {
+    if (startTimestamp !== null && gameState === "playing") {
+      intervalRef.current = setInterval(() => {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTimestamp;
+        setElapsedTime(elapsed);
+      }, 1000); // runs every 1000ms (1 second)
+
+      console.log("started interval:", intervalRef.current);
+    }
+
+    if (startTimestamp === null || gameState === "paused") {
+      clearInterval(intervalRef.current);
+    }
+  }, [startTimestamp, gameState]);
+
+  /**
+   * Sets fixed time state variable to current time
+   */
+  const startTimer = () => {
+    if (startTimestamp !== null) return; // already running
+    setStartTimestamp(Date.now());
+    setGameState("playing");
+  };
 
   /*** HANDLE FUNCTIONS ***/
 
   const handleGameReset = () => {
-    // let newCards = cards.map((card) => ({
-    //   ...card,
-    //   isFlipped: false,
-    //   isMatched: false,
-    // }));
-
-    //newCards = shuffle(newCards);
-    // setCards(shuffle(newCards));
-
     setCards((prevCards) => {
       //Setup newCards
       let newCards = prevCards.map((prevCard) => ({
@@ -76,7 +105,63 @@ export const useGameEngine = () => {
       }));
       return shuffle(newCards);
     });
-    
+
+    resetGameBoard();
+  };
+
+  /**
+   * Retry's API on error on page load
+   */
+  const handleAPIReset = async () => {
+    await loadData();
+    resetGameBoard();
+  };
+
+  const resetGameBoard = () => {
+    setElapsedTime(0);
+    setMoves(0);
+    setStartTimestamp(null);
+    setGameState("playing");
+    setCardsClickable(true);
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    audioRef.current.muted = false;
+  };
+
+  const handleGameState = () => {
+    //If innitial game i.e. actual timer has not began cannot start/stop timer
+    if (startTimestamp === null) return;
+    cardsClickable ? setCardsClickable(false) : setCardsClickable(true);
+
+    if (gameState === "playing") setGameState("paused");
+    else if (gameState === "paused") {
+      //Reset start time to avoid time jump when resuming
+      setStartTimestamp(Date.now() - elapsedTime);
+      setGameState("playing");
+    }
+  };
+
+  const handleMute = () => {
+    setAudioMute((prev) => {
+      const newMuted = !prev;
+      audioRef.current.muted = newMuted;
+      return newMuted;
+    });
+  };
+
+  const handlePlayBgMusic = () => {
+    const audio = audioRef.current;
+    audio.currentTime = 0; //always start from beginning
+    audio.play();
+    audio.loop = true;
+    setAudioMute(false); //defensive check, ensures, audio is not muted
+  };
+
+  /**
+   * Ensures that on game-exit, game is reset if user re-enters without triggering API reload
+   */
+  const handleGameStart = () => {
+    if (isGameOver) handleGameReset();
   };
 
   const handleCardClick = async (card) => {
@@ -89,9 +174,15 @@ export const useGameEngine = () => {
     )
       return;
 
+    //On first click should start timer, otherwise will do nothing
+    startTimer();
+
     console.log("Clicked card:", card);
 
     setCardsClickable(false); // temporarily disable clicking
+
+    //Increment # of moves
+    setMoves((prev) => prev + 1);
 
     console.log(card.uniqueID);
 
@@ -165,5 +256,21 @@ export const useGameEngine = () => {
     handleCardClick,
     isGameOver,
     handleGameReset,
+    moves,
+    setMoves,
+    startTimestamp,
+    setStartTimestamp,
+    elapsedTime,
+    setElapsedTime,
+    handleGameStart,
+    handleAPIReset,
+    gameState,
+    setGameState,
+    handleGameState,
+    handlePlayBgMusic,
+    handleMute,
+    audioMute,
+    setAudioMute, //unused
+    audioRef,
   };
 };

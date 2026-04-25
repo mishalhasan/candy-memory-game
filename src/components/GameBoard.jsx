@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { GameContext } from "../context/GameContext.jsx";
 import Card from "./Card.jsx";
+
 import { useGameEngine } from "../hooks/useGameEngine.js";
 
 export default function GameBoard() {
@@ -9,7 +10,7 @@ export default function GameBoard() {
 
   return (
     //<main className="min-h-screen w-full flex justify-center py-8 px-4">
-    <main className="w-full flex justify-center px-10 ">
+    <main className="w-full backdrop-blur-sm flex justify-center px-10 ">
       <div
         className="
    rounded-2xl flex flex-wrap justify-center gap-4 h-fit w-full lg:grid lg:grid-cols-6 lg:justify-items-center max-w-[1600px] lg:mx-auto "

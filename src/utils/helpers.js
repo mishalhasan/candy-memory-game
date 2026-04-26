@@ -1,14 +1,11 @@
-// export const isValidCard = (val) =>
-//   val !== "" && val !== null && val !== undefined && val !== false;
-
-/*
- * Filters out unnecessary data and only keeps relevant photo data with relevant changes
+/**
+ *Extracts & filters relevant Unsplash photo data, keeping only necessary fields; assumes images are near-square (no strict check).
+ *Resizes images to 400x400 and appends UTM params to profile links for tracking.
  */
 export function processImages(rawImgsData) {
   const cleanImgData = [];
 
   for (const img of rawImgsData) {
-    // if (img.width === img.height) {
     // Grab raw URL and resize to 400x400
     const imgUrl = `${img.urls.raw}&w=400&h=400`;
 
@@ -36,6 +33,9 @@ export function processImages(rawImgsData) {
 export const isValidCard = (card) =>
   card && card.uniqueID != null && card.uniqueID !== "";
 
+/**
+ * Randomizes card order using random index swapping.
+ */
 export const shuffle = (cards) => {
   for (let index = 0; index < cards.length; index++) {
     const randomIndx = Math.floor(Math.random() * cards.length);
@@ -47,6 +47,10 @@ export const shuffle = (cards) => {
   return cards;
 };
 
+/**
+ * Duplicates images to create pairs, assigns unique IDs,
+ * and shuffles the final card array.
+ */
 export function prepareCards(imgs) {
   // Duplicate images to create matching pair cards
   let cards = [...imgs, ...imgs];
@@ -63,6 +67,10 @@ export function prepareCards(imgs) {
   return shuffle(cards);
 }
 
+/**
+ * Toggles isFlipped or isMatched on a target card by uniqueID.
+ * Throws if an invalid prop is passed.
+ */
 export const toggleCardStatus = (prevCards, targetID, prop, propVal) => {
   const TOGGLEABLE_PROPS = ["isFlipped", "isMatched"];
 
@@ -79,8 +87,14 @@ export const toggleCardStatus = (prevCards, targetID, prop, propVal) => {
   );
 };
 
+/**
+ * Returns a promise that resolves after a given delay in ms.
+ */
 export const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Formats milliseconds into mm:ss string with zero padding.
+ */
 export const formatTime = (ms) => {
   const totalSeconds = Math.floor(ms / 1000);
   let mins = Math.floor(totalSeconds / 60);
@@ -93,15 +107,21 @@ export const formatTime = (ms) => {
   return `${mins}:${secs}`;
 };
 
+/**
+ * Saves elapsed time to localStorage if it's a new best.
+ */
 export const saveBestTime = (time) => {
-    const stored = localStorage.getItem("bestTime");
-    const best = stored === null ? Infinity : Number(stored);
+  const stored = localStorage.getItem("bestTime");
+  const best = stored === null ? Infinity : Number(stored);
 
   if (time < best) {
     localStorage.setItem("bestTime", String(time));
   }
 };
 
+/**
+ * Retrieves best time from localStorage, returns 0 if none saved.
+ */
 export const getBestTime = () => {
   const stored = localStorage.getItem("bestTime");
   return stored === null ? 0 : Number(stored);

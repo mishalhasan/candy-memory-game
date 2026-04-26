@@ -1,4 +1,3 @@
-
 export default function Header({ elapsedTime, moves }) {
   return (
     <header className="flex flex-col gap-2 text-center">

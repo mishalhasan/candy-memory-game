@@ -1,16 +1,13 @@
 import { useGameNavigation } from "../hooks/useGameNavigation";
-import { useContext } from "react";
-import { GameContext } from "../context/GameContext";
 
-export default function Footer() {
+export default function Footer({
+  handleGameState,
+  gameState,
+  handleGameReset,
+  handleMute,
+  audioMute,
+}) {
   const { goHome } = useGameNavigation();
-  const {
-    handleGameState,
-    gameState,
-    handleGameReset,
-    handleMute,
-    audioMute,
-  } = useContext(GameContext);
 
   return (
     <footer className=" rounded-lg backdrop-blur-md z-10 px-4 py-3 flex justify-center gap-6">

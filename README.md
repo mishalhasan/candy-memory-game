@@ -1,16 +1,127 @@
-# React + Vite
+# Candy Memory Game 🍬
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive memory card matching game featuring a candy theme, card flip animations, background music, and live scoring. Players flip cards, find matching pairs, and try to beat their best time.
 
-Currently, two official plugins are available:
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- 🃏 18 randomized candy-themed cards fetched from the Unsplash API
+- ⏱️ Live timer and move counter
+- 🏆 Best time saved to local storage
+- 🔊 Background music with mute toggle
+- ⏸️ Pause and resume mid-game
+- 📱 Responsive layout for mobile and desktop
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React (Hooks, Context API)
+- React Router
+- Tailwind CSS
+- Vite
+- Unsplash API
+- Google Fonts (Dancing Script, Poppins, Inter)
+- Material Symbols
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js installed on your machine
+- An Unsplash API access key
+
+> An Unsplash API key is required to load images. You can generate one by signing up as a developer at https://unsplash.com/developers.
+
+### Installation
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/mishalhasan/candy-memory-game
+cd candy-memory-game
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Create a `.env` file in the root directory and add your Unsplash API key
+
+```bash
+VITE_API_KEY=your_unsplash_access_key_here
+VITE_API_URL=https://api.unsplash.com/photos/random?collections=aiwLo0Esrfo&count=9
+```
+
+> **Note:** Changing the count parameter affects layout. The game is optimized for 9 pairs (18 cards).
+
+4. Start the development server
+
+```bash
+npm run dev
+```
+
+## How to Play
+
+1. Click **Start Game** on the home page
+2. Flip two cards by clicking them — matching pairs stay revealed
+3. Find all 9 pairs to win
+4. Use the footer controls to pause, mute, or return home mid-game
+
+## Project Structure
+
+```
+src/
+├── api/              # Unsplash API fetching
+├── assets/
+│   ├── audio/        # Background music
+│   └── imgs/         # Background images
+├── components/       # UI components (Card, GameBoard, Header, Footer, etc.)
+├── context/          # GameContext and GameProvider
+├── hooks/            # useGameEngine, useGameEnd, useGameNavigation
+├── pages/            # Home, Game, GameOver
+└── utils/            # Helper functions
+```
+
+## Tailwind Configuration
+
+Custom fonts and staggered bounce animations are configured in `tailwind.config.js`:
+
+```js
+theme: {
+  extend: {
+    animation: {
+      bounce1: "bounce 1s 0.5s infinite",
+      bounce2: "bounce 1s 0.65s infinite",
+      bounce3: "bounce 1s 0.8s infinite",
+    },
+    fontFamily: {
+      cursive: ['"Dancing Script"', "cursive"],
+      emphasis: ["Poppins", "sans-serif"],
+      body: ["Inter", "sans-serif"],
+    },
+  },
+},
+```
+
+---
+
+## 📝 Notes
+
+- **API usage:** If images fail to load, check your API key and Unsplash rate limits.
+- **Browser support:** This app is built for modern browsers (Chrome, Firefox, Safari, Edge). Internet Explorer is not supported.
+
+---
+
+## Credits
+
+- Background music: [freesound.org](https://freesound.org/s/738853/) — License: Creative Commons 0
+- Card images: [Unsplash](https://unsplash.com) — Attribution included per image via API metadata
+- Landing page imagery: Google Gemini (AI-generated)

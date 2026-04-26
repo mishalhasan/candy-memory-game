@@ -1,36 +1,23 @@
-import { useState, useEffect, useContext, useRef } from "react";
+import { useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-//import { useContext } from "react";
 import { GameContext } from "../context/GameContext";
 import { saveBestTime } from "../utils/helpers.js";
 
 export function useGameEnd() {
-  const {
-    elapsedTime,
-    setStartTimestamp,
-    isGameOver,
-    cards,
-    setGameState,
-    audioRef,
-  } = useContext(GameContext);
+  const { elapsedTime, isGameOver, handleGameEnd } = useContext(GameContext);
   const navigate = useNavigate();
 
-  //Ensures redirection to gameOver page when game is over
+  /**
+   * Handles end of game logic when all pairs are matched.
+   * Listens for isGameOver and navigates to game over page.
+   * Saves best time and triggers game end state.
+   */
   useEffect(() => {
     if (!isGameOver) return;
 
-    //Stop timer
-    setStartTimestamp(null);
-
-    //Save elapsed time in local storage if new record
     saveBestTime(elapsedTime);
 
-    //update GameState
-    setGameState("ended");
-
-    //stop song
-    // audioRef.current.pause();
-    // audioRef.current.currentTime = 0;
+    handleGameEnd();
 
     //Adds a small delay for UX improvement
     const timer = setTimeout(() => {
@@ -38,5 +25,5 @@ export function useGameEnd() {
     }, 600);
 
     return () => clearTimeout(timer);
-  }, [cards, navigate]);
+  }, [isGameOver]);
 }

@@ -1,24 +1,25 @@
 import { createContext } from "react";
 
+/**
+ * Default context values — actual values provided by GameProvider via useGameEngine.
+ */
 export const GameContext = createContext({
-  score: 0, // default value
-  cardPair: [null, null],
   loading: false,
   error: false,
   cards: [],
   cardsClickable: true,
   moves: 0,
-  firstCardID: null,
-  startTimestamp: null,
   elapsedTime: 0,
-  setStartTimestamp: () => {},
-  setFirstCardID: () => {},
-  setScore: () => {},
-  setCardPair: () => {},
-  setLoading: () => {},
-  setError: () => {},
-  setCards: () => {},
-  setCardsClickable: () => {},
-  setMoves: () => {},
-  setElapsedTime: () => {},
+  gameState: "idle", // 'idle', 'playing', 'paused', 'ended'
+  audioMute: false,
+
+  handleCardClick: () => {},
+  handleGameReset: () => {},
+  handleGameStart: () => {},
+  handleAPIReset: () => {},
+  handleGameState: () => {},
+  handlePlayBgMusic: () => {},
+  handleStopBgMusic: () => {},
+  handleGameEnd: () => {},
+  handleMute: () => {},
 });

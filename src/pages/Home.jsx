@@ -5,7 +5,6 @@ export default function Home() {
   const { startGame } = useGameNavigation();
 
   return (
-    // <div className="flex flex-col h-screen justify-center items-center gap-10 bg-pink-50">
     <div
       className="flex flex-col h-screen justify-center items-center gap-10 bg-pink-50 bg-cover bg-center"
       style={{ backgroundImage: `url(${bgImage})` }}

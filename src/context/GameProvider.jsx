@@ -1,66 +1,52 @@
-import { useState } from "react";
 import { GameContext } from "./GameContext";
 import { useGameEngine } from "../hooks/useGameEngine";
-// Create provider
-export const GameProvider = ({ children }) => {
+
+/**
+ * Provides global game state and handlers to the component tree via GameContext.
+ * All state logic lives in useGameEngine.
+ */export const GameProvider = ({ children }) => {
   const {
-    cards,
-    setCards,
     loading,
     error,
+    cards,
     cardsClickable,
-    moves,
-    setCardsClickable,
-    firstCardID,
-    setFirstCardID,
-    startTimestamp,
-    setStartTimestamp,
-    elapsedTime,
-    setElapsedTime,
     handleCardClick,
     isGameOver,
     handleGameReset,
+    moves,
+    elapsedTime,
     handleGameStart,
     handleAPIReset,
     gameState,
-    setGameState,
     handleGameState,
     handlePlayBgMusic,
     handleMute,
     audioMute,
-    setAudioMute,
-    audioRef,
+    handleStopBgMusic,
+    handleGameEnd,
   } = useGameEngine();
 
   return (
     <GameContext.Provider
       value={{
-        cards,
-        setCards,
         loading,
         error,
+        cards,
         cardsClickable,
-        moves,
-        startTimestamp,
-        setStartTimestamp,
-        setCardsClickable,
-        firstCardID,
-        setFirstCardID,
-        elapsedTime,
-        setElapsedTime,
         handleCardClick,
         isGameOver,
         handleGameReset,
+        moves,
+        elapsedTime,
         handleGameStart,
         handleAPIReset,
         gameState,
-        setGameState,
         handleGameState,
         handlePlayBgMusic,
         handleMute,
         audioMute,
-        setAudioMute,
-        audioRef,
+        handleStopBgMusic,
+        handleGameEnd,
       }}
     >
       {children}

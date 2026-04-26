@@ -1,5 +1,4 @@
-import { useState, useEffect, useContext, useRef } from "react";
-import { GameContext } from "../context/GameContext.jsx";
+import { useState, useEffect, useRef } from "react";
 import { fetchCandyLandPhotos } from "../api/cards.js";
 import bgAudio from "../assets/audio/candy-bg.mp3";
 
@@ -12,9 +11,10 @@ import {
 } from "../utils/helpers.js";
 
 export const useGameEngine = () => {
+  /*** Initialize state variables ***/
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-
   const [cards, setCards] = useState([]);
   const [cardsClickable, setCardsClickable] = useState(true);
   const [firstCardID, setFirstCardID] = useState(null);
@@ -23,6 +23,7 @@ export const useGameEngine = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [gameState, setGameState] = useState("idle"); //'idle', 'playing', 'paused', 'ended'
   const [audioMute, setAudioMute] = useState(false);
+
   const intervalRef = useRef(null);
   const audioRef = useRef(new Audio(bgAudio));
 
@@ -35,8 +36,9 @@ export const useGameEngine = () => {
     loadData();
   }, []);
 
-  /*
-   * Get images from Unsplash API
+  /**
+   * Fetches candy land photos from Unsplash API.
+   * Sets error state if request fails.
    */
   async function loadData() {
     try {
@@ -47,8 +49,6 @@ export const useGameEngine = () => {
       const result = await fetchCandyLandPhotos(); // already processed
       const imgCards = prepareCards(result);
       if (imgCards) setCards(imgCards);
-      console.log("imgCards", imgCards);
-      console.log("cards", cards);
     } catch (error) {
       setError(true);
     } finally {
@@ -64,9 +64,8 @@ export const useGameEngine = () => {
   /*** TIMER FUNCTIONS ***/
 
   /**
-   * Timer controlled by startTimestamp (updated only on game start and end) &
-   * gameState to allow for pause of timer in middle of game. Gamestate triggers to
-   * 'ended' in useGameEnd hook.
+   * Starts/stops timer interval based on game state.
+   * Clears interval on pause or when startTimestamp is null.
    */
   useEffect(() => {
     if (startTimestamp !== null && gameState === "playing") {
@@ -75,8 +74,6 @@ export const useGameEngine = () => {
         const elapsed = currentTime - startTimestamp;
         setElapsedTime(elapsed);
       }, 1000); // runs every 1000ms (1 second)
-
-      console.log("started interval:", intervalRef.current);
     }
 
     if (startTimestamp === null || gameState === "paused") {
@@ -85,16 +82,58 @@ export const useGameEngine = () => {
   }, [startTimestamp, gameState]);
 
   /**
-   * Sets fixed time state variable to current time
+   * Starts timer, updates game state, and resumes music.
+   * Guard ensures this only fires on first card click.
    */
-  const startTimer = () => {
+  const handleGameBegin = () => {
     if (startTimestamp !== null) return; // already running
     setStartTimestamp(Date.now());
     setGameState("playing");
+    audioRef.current.play();
   };
 
   /*** HANDLE FUNCTIONS ***/
 
+  /** Audio Functions **/
+
+  /**
+   * Stops background music and resets to beginning.
+   */
+  const handleStopBgMusic = () => {
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+  };
+
+  /**
+   * Toggles mute state of background music.
+   */
+  const handleMute = () => {
+    setAudioMute((prev) => {
+      const newMuted = !prev;
+      audioRef.current.muted = newMuted;
+      return newMuted;
+    });
+  };
+
+  /**
+   * Plays background music from beginning at low volume.
+   * Resets mute state as defensive check.
+   */
+  const handlePlayBgMusic = () => {
+    const audio = audioRef.current;
+    audio.currentTime = 0; //always start from beginning
+    audio.play();
+    audio.volume = 0.1;
+    audio.loop = true;
+    setAudioMute(false); //defensive check, ensures, audio is not muted
+  };
+
+  /** Game Start Functions **/
+
+  /**
+   * Resets cards to unflipped/unmatched state and shuffles.
+   * Calls resetGameBoard to clear all game state.
+   */
   const handleGameReset = () => {
     setCards((prevCards) => {
       //Setup newCards
@@ -110,29 +149,36 @@ export const useGameEngine = () => {
   };
 
   /**
-   * Retry's API on error on page load
+   * Retries API call on error and resets game board.
    */
   const handleAPIReset = async () => {
     await loadData();
     resetGameBoard();
   };
 
+  /**
+   * Resets all game board state to default values.
+   * Called on game reset and API retry.
+   */
   const resetGameBoard = () => {
     setElapsedTime(0);
     setMoves(0);
     setStartTimestamp(null);
     setGameState("playing");
     setCardsClickable(true);
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
     audioRef.current.muted = false;
   };
 
+  /**
+   * Toggles between paused and playing game state.
+   * Cannot pause before timer has started.
+   */
   const handleGameState = () => {
     //If innitial game i.e. actual timer has not began cannot start/stop timer
     if (startTimestamp === null) return;
     cardsClickable ? setCardsClickable(false) : setCardsClickable(true);
 
+    //Toggle between paused and playing game state
     if (gameState === "playing") setGameState("paused");
     else if (gameState === "paused") {
       //Reset start time to avoid time jump when resuming
@@ -141,29 +187,32 @@ export const useGameEngine = () => {
     }
   };
 
-  const handleMute = () => {
-    setAudioMute((prev) => {
-      const newMuted = !prev;
-      audioRef.current.muted = newMuted;
-      return newMuted;
-    });
-  };
-
-  const handlePlayBgMusic = () => {
-    const audio = audioRef.current;
-    audio.currentTime = 0; //always start from beginning
-    audio.play();
-    audio.loop = true;
-    setAudioMute(false); //defensive check, ensures, audio is not muted
-  };
-
   /**
-   * Ensures that on game-exit, game is reset if user re-enters without triggering API reload
+   * Resets game if returning to home after completion.
+   * Prevents stale game state on re-entry.
    */
   const handleGameStart = () => {
     if (isGameOver) handleGameReset();
   };
 
+  /** Game End Functions**/
+
+  /**
+   * Stops timer, updates game state to ended, and stops music.
+   * Triggered when all card matches are found.
+   */
+  const handleGameEnd = () => {
+    setStartTimestamp(null); // stops timer
+    setGameState("ended"); // updates game state
+    handleStopBgMusic(); // stops audio
+  };
+
+  /*** CORE Game Logic  ***/
+
+  /**
+   * Handles card selection logic for matching pairs.
+   * Manages flip state, match checking, and move counter.
+   */
   const handleCardClick = async (card) => {
     //ignore invalid cards/states where user already clicked card
     if (
@@ -174,17 +223,13 @@ export const useGameEngine = () => {
     )
       return;
 
-    //On first click should start timer, otherwise will do nothing
-    startTimer();
-
-    console.log("Clicked card:", card);
+    //On first click ensuures timer started, update game state, ensure music on
+    handleGameBegin();
 
     setCardsClickable(false); // temporarily disable clicking
 
     //Increment # of moves
     setMoves((prev) => prev + 1);
-
-    console.log(card.uniqueID);
 
     //Update clicked card flipped status
     setCards((prevCards) =>
@@ -193,13 +238,9 @@ export const useGameEngine = () => {
 
     //Check if card1 is selected or card 2 by user
     if (firstCardID === null) {
-      console.log("testing card 1");
-
       //Add card as first pair of cardPair
       setFirstCardID(card.uniqueID);
     } else {
-      console.log("card 2 testing");
-
       //Get firstCard data
       const firstCard = cards.find((card) => card.uniqueID === firstCardID);
 
@@ -248,29 +289,20 @@ export const useGameEngine = () => {
     loading,
     error,
     cards,
-    setCards,
     cardsClickable,
-    setCardsClickable,
-    firstCardID,
-    setFirstCardID,
     handleCardClick,
     isGameOver,
     handleGameReset,
     moves,
-    setMoves,
-    startTimestamp,
-    setStartTimestamp,
     elapsedTime,
-    setElapsedTime,
     handleGameStart,
     handleAPIReset,
     gameState,
-    setGameState,
     handleGameState,
     handlePlayBgMusic,
     handleMute,
     audioMute,
-    setAudioMute, //unused
-    audioRef,
+    handleStopBgMusic,
+    handleGameEnd,
   };
 };

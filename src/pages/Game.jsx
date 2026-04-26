@@ -9,8 +9,20 @@ import { formatTime } from "../utils/helpers";
 import { useGameEnd } from "../hooks/useGameEnd.js";
 
 export default function Game() {
-  //Load page props and setup game exit
-  const { loading, error, elapsedTime, moves } = useContext(GameContext);
+  const {
+    loading,
+    error,
+    elapsedTime,
+    moves,
+    handleGameState,
+    gameState,
+    handleGameReset,
+    handleMute,
+    audioMute,
+    cards,
+    handleCardClick,
+    cardsClickable,
+  } = useContext(GameContext);
   useGameEnd();
 
   if (loading) return <Loading />;
@@ -18,13 +30,23 @@ export default function Game() {
 
   return (
     <div className="flex flex-col gap-8 items-center justify-center min-h-screen bg-pink-50 bg-gradient-to-b from-pink-200 via-purple-200 to-blue-200 p-5 sm:p-2">
-      {/* soft pink overlay  */}
+      {/* creates pink overlay  */}
       <div className=" fixed inset-0 bg-amber-100/20 z-0" />
 
       <div className="flex flex-col gap-8 items-center justify-center p-5 ">
         <Header elapsedTime={formatTime(elapsedTime)} moves={moves} />
-        <GameBoard />
-        <Footer />
+        <GameBoard
+          cards={cards}
+          handleCardClick={handleCardClick}
+          cardsClickable={cardsClickable}
+        />
+        <Footer
+          handleGameState={handleGameState}
+          gameState={gameState}
+          handleGameReset={handleGameReset}
+          handleMute={handleMute}
+          audioMute={audioMute}
+        />
       </div>
     </div>
   );
